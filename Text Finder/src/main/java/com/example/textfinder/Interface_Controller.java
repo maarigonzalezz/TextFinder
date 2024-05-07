@@ -20,7 +20,6 @@ public class Interface_Controller implements Initializable {
     @FXML
     private ListView<String> listview_results;
 
-
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         listview_biblioteca.setItems(FXCollections.observableArrayList());

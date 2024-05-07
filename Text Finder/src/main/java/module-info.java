@@ -1,6 +1,8 @@
 module com.example.textfinder {
     requires javafx.controls;
     requires javafx.fxml;
+    requires org.apache.poi.ooxml;
+    requires org.apache.pdfbox;
 
 
     opens com.example.textfinder to javafx.fxml;
