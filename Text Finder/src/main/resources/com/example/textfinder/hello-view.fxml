@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
+
+<VBox alignment="CENTER" prefHeight="600.0" prefWidth="990.0" spacing="20.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="com.example.textfinder.Interface_Controller">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+   <children>
+      <SplitPane dividerPositions="0.4873417721518987" prefHeight="560.0" prefWidth="951.0">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="558.0" prefWidth="492.0">
+               <children>
+                  <Button layoutX="66.0" layoutY="20.0" mnemonicParsing="false" onAction="#btn_anadir_doc" prefHeight="31.0" prefWidth="154.0" text="Añadir Documento" />
+                  <Button layoutX="239.0" layoutY="63.0" mnemonicParsing="false" onAction="#btn_anadir_carpeta" prefHeight="31.0" prefWidth="167.0" text="Añadir carpeta" />
+                  <Button layoutX="66.0" layoutY="63.0" mnemonicParsing="false" onAction="#btn_eliminar_doc" text="Eliminar documento" />
+                  <Button layoutX="238.0" layoutY="20.0" mnemonicParsing="false" onAction="#btn_actualizar_doc" text="Actualizar Documento" />
+                  <ListView fx:id="listview_biblioteca" layoutX="4.0" layoutY="104.0" prefHeight="454.0" prefWidth="449.0" />
+               </children>
+            </AnchorPane>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="558.0" prefWidth="413.0">
+               <children>
+                  <TextField layoutX="14.0" layoutY="30.0" prefHeight="31.0" prefWidth="186.0" />
+                  <MenuButton contentDisplay="RIGHT" layoutX="348.0" layoutY="30.0" mnemonicParsing="false" popupSide="LEFT" text="Ordenar por">
+                    <items>
+                      <MenuItem mnemonicParsing="false" text="Nombre" />
+                      <MenuItem mnemonicParsing="false" text="Fecha de creación" />
+                        <MenuItem mnemonicParsing="false" text="Tamaño" />
+                    </items>
+                  </MenuButton>
+                  <ListView fx:id="listview_results" layoutX="5.0" layoutY="78.0" prefHeight="481.0" prefWidth="473.0" />
+                  <Button layoutX="286.0" layoutY="30.0" mnemonicParsing="false" text="Abrir" />
+                  <Button layoutX="209.0" layoutY="30.0" mnemonicParsing="false" text="Buscar" />
+               </children>
+            </AnchorPane>
+        </items>
+      </SplitPane>
+   </children>
+</VBox>
