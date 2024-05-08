@@ -8,8 +8,6 @@ import java.io.IOException;
 public class DOCXParser {
     private File DOCX;
 
-    private String DOCXPath;
-
     private String parsedText;
 
     private int WordCounter;
@@ -17,7 +15,7 @@ public class DOCXParser {
     //Constructor de DOCXParser que inicializa el parser con un archivo DOCX.
     public DOCXParser(File DOCXFile) {
         this.DOCX = DOCXFile;
-        this.DOCXPath = this.DOCX.getPath();
+        String DOCXPath = this.DOCX.getPath();
         this.parsedText = parse();  // Llama a parse para extraer el texto del documento
         this.WordCounter = countWords(this.parsedText);  // Cuenta las palabras en el texto extraído
     }
