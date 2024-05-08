@@ -14,6 +14,10 @@ import java.util.ResourceBundle;
 
 public class Interface_Controller implements Initializable {
 
+    FileChooser.ExtensionFilter txt = new FileChooser.ExtensionFilter("Text Files (*.txt)", "*.txt");
+    FileChooser.ExtensionFilter pdf = new FileChooser.ExtensionFilter("PDF Files (*.pdf)", "*.pdf");
+    FileChooser.ExtensionFilter docx = new FileChooser.ExtensionFilter("Word Documents (*.docx)", "*.docx");
+
     @FXML
     private ListView<String> listview_biblioteca;
 
@@ -27,9 +31,6 @@ public class Interface_Controller implements Initializable {
     }
 
     public void btn_anadir_doc(ActionEvent actionEvent) {
-        FileChooser.ExtensionFilter txt = new FileChooser.ExtensionFilter("Text Files (*.txt)", "*.txt");
-        FileChooser.ExtensionFilter pdf = new FileChooser.ExtensionFilter("PDF Files (*.pdf)", "*.pdf");
-        FileChooser.ExtensionFilter docx = new FileChooser.ExtensionFilter("Word Documents (*.docx)", "*.docx");
         FileChooser fileChooser = new FileChooser();
         // Agregar los filtros al fileChooser
         fileChooser.getExtensionFilters().addAll(txt, pdf, docx);
@@ -37,22 +38,18 @@ public class Interface_Controller implements Initializable {
         File selectedFile = fileChooser.showOpenDialog(null);
         if (selectedFile != null){
             if (selectedFile.getName().toLowerCase().endsWith(".docx")) {
-                listview_biblioteca.getItems().add(selectedFile.getName());
                 DOCXParser docxParser = new DOCXParser(selectedFile);
                 docxParser.parse();
             } else if (selectedFile.getName().toLowerCase().endsWith(".pdf")) {
-                listview_biblioteca.getItems().add(selectedFile.getName());
-                PDFParser pdfParser = new PDFParser(selectedFile);
-                System.out.println("works");
+                PDFParser pdfParser = new PDFParser(selectedFile);;
                 pdfParser.getParsedText();
-                System.out.println("works too");
             } else if (selectedFile.getName().toLowerCase().endsWith(".txt")) {
-                listview_biblioteca.getItems().add(selectedFile.getName());
                 TextFileParser textFileParser = new TextFileParser(selectedFile);
                 textFileParser.parse();
             } else {
                 System.out.println("no se puede parsear este documento");
             }
+            listview_biblioteca.getItems().add(selectedFile.getName());
         }
     }
 
