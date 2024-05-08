@@ -35,7 +35,7 @@ public class TextFileParser {
     }
 
     // Cuenta el número de palabras en un texto dado.
-    private int countWords(String text) {
+    int countWords(String text) {
         if (text == null || text.isEmpty()) {
             return 0;  // Si no hay texto, retorna 0
         }

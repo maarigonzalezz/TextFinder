@@ -24,7 +24,6 @@ public class PDFParser {
         if (PDF == null) {
             return null;
         }
-
         try (PDDocument document = PDDocument.load(PDF)) {
             PDFTextStripper stripper = new PDFTextStripper();
             return stripper.getText(document);  // Devuelve el texto extraído
@@ -35,7 +34,7 @@ public class PDFParser {
     }
 
     // Cuenta el número de palabras en un texto dado.
-    private int countWords(String text) {
+    int countWords(String text) {
         if (text == null || text.isEmpty()) {
             return 0;  // Si no hay texto, retorna 0
         }

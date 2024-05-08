@@ -32,24 +32,35 @@ public class Interface_Controller implements Initializable {
 
     public void btn_anadir_doc(ActionEvent actionEvent) {
         FileChooser fileChooser = new FileChooser();
-        // Agregar los filtros al fileChooser
-        fileChooser.getExtensionFilters().addAll(txt, pdf, docx);
-        // Mostrar el diálogo para seleccionar un archivo
+        fileChooser.getExtensionFilters().addAll(txt, pdf, docx); //añade los filtros para escoger archivos
         File selectedFile = fileChooser.showOpenDialog(null);
         if (selectedFile != null){
-            if (selectedFile.getName().toLowerCase().endsWith(".docx")) {
-                DOCXParser docxParser = new DOCXParser(selectedFile);
-                docxParser.parse();
-            } else if (selectedFile.getName().toLowerCase().endsWith(".pdf")) {
-                PDFParser pdfParser = new PDFParser(selectedFile);;
-                pdfParser.getParsedText();
-            } else if (selectedFile.getName().toLowerCase().endsWith(".txt")) {
-                TextFileParser textFileParser = new TextFileParser(selectedFile);
-                textFileParser.parse();
-            } else {
-                System.out.println("no se puede parsear este documento");
-            }
+            indizacion(selectedFile);
             listview_biblioteca.getItems().add(selectedFile.getName());
+        }
+    }
+
+    public void indizacion(File file){
+        if (file.getName().toLowerCase().endsWith(".docx")) {
+            DOCXParser docxParser = new DOCXParser(file);
+            String texto = docxParser.parse();
+            int contador = docxParser.countWords(texto);
+            System.out.println(contador);
+            System.out.println(texto);
+        } else if (file.getName().toLowerCase().endsWith(".pdf")) {
+            PDFParser pdfParser = new PDFParser(file);
+            String texto = pdfParser.parse(); // Llama al método parse() para extraer el texto del documento
+            int contador = pdfParser.countWords(texto); // Llama al método countWords con el texto extraído
+            System.out.println(contador);
+            System.out.println(texto);
+        } else if (file.getName().toLowerCase().endsWith(".txt")) {
+            TextFileParser textFileParser = new TextFileParser(file);
+            String texto = textFileParser.parse();
+            int contador = textFileParser.countWords(texto);
+            System.out.println(contador);
+            System.out.println(texto);
+        } else {
+            System.out.println("No se puede parsear este documento");
         }
     }
 
