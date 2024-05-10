@@ -1,6 +1,21 @@
 package com.example.textfinder;
 
-//Estructura básica de un Árbol AVL
+class AVLNode {
+    String key;
+    int height;
+    AVLNode left, right;
+    LinkedListOcurrences ocurrences = new LinkedListOcurrences();
+
+    public AVLNode(String  key, int numberword, String doc) {
+        this.key = key;
+        this.height = 1;  // Un nodo nuevo tiene siempre altura 1
+        this.left = null;
+        this.right = null;
+        ocurrences.add(numberword, doc);
+    }
+}
+
+// Estructura básica de un Árbol AVL
 public class AVLTree {
     private AVLNode root;
 
@@ -10,54 +25,47 @@ public class AVLTree {
     }
 
     // Método público para insertar un nuevo nodo
-    public void insert(int key) {
-        root = insert(root, key);
+    public void insert(String key, int numberword, String doc) {
+        root = insert(root, key, numberword, doc);
     }
 
     // Método recursivo privado para insertar un nuevo nodo
-    private AVLNode insert(AVLNode node, int key) {
+    private AVLNode insert(AVLNode node, String key, int numberword, String doc) {
         if (node == null) {
-            return new AVLNode(key);
+            return new AVLNode(key, numberword, doc);
         }
-
-        if (key < node.key) {
-            node.left = insert(node.left, key);
-        } else if (key > node.key) {
-            node.right = insert(node.right, key);
+        if (key.compareTo(node.key) < 0) {
+            node.left = insert(node.left, key, numberword, doc);
+        } else if (key.compareTo(node.key) > 0) {
+            node.right = insert(node.right, key, numberword, doc);
         } else {
-            return node;  // No se permiten valores duplicados
+            // Si la palabra ya existe en el árbol, solo se añade la ocurrencia
+            node.ocurrences.add(numberword, doc);
+            return node;
         }
-
         // Actualizar altura de este nodo ancestro
         node.height = 1 + Math.max(height(node.left), height(node.right));
-
         // Obtener el factor de equilibrio
         int balance = getBalance(node);
-
         // Si el nodo se desbalanceó, hay 4 casos
-
         // Caso izquierda-izquierda
-        if (balance > 1 && key < node.left.key) {
+        if (balance > 1 && key.compareTo(node.left.key) < 0) {
             return rotateRight(node);
         }
-
         // Caso derecha-derecha
-        if (balance < -1 && key > node.right.key) {
+        if (balance < -1 && key.compareTo(node.right.key) > 0) {
             return rotateLeft(node);
         }
-
         // Caso izquierda-derecha
-        if (balance > 1 && key > node.left.key) {
+        if (balance > 1 && key.compareTo(node.left.key) > 0) {
             node.left = rotateLeft(node.left);
             return rotateRight(node);
         }
-
         // Caso derecha-izquierda
-        if (balance < -1 && key < node.right.key) {
+        if (balance < -1 && key.compareTo(node.right.key) < 0) {
             node.right = rotateRight(node.right);
             return rotateLeft(node);
         }
-
         // Devolver el nodo (cambiado o no)
         return node;
     }
@@ -108,5 +116,20 @@ public class AVLTree {
 
         // Retornar nueva raíz
         return y;
+    }
+    // Método público para realizar recorrido inOrder
+    public void inOrder() {
+        inOrderRecursive(root);
+    }
+
+    // Método privado recursivo para realizar recorrido inOrder
+    private void inOrderRecursive(AVLNode node) {
+        if (node != null) {
+            inOrderRecursive(node.left);
+            System.out.print(node.key + ": ");
+            node.ocurrences.printList();
+            System.out.println("\n");
+            inOrderRecursive(node.right);
+        }
     }
 }
