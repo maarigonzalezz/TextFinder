@@ -8,10 +8,22 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.List;
 import java.io.File;
+import javafx.scene.control.TextField;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+
 
 public class Interface_Controller implements Initializable {
 
@@ -28,6 +40,12 @@ public class Interface_Controller implements Initializable {
 
     @FXML
     private ListView<String> listview_results;
+
+    private Indizador indizador = new Indizador();
+    private String textoParseado = "";
+
+    @FXML
+    private TextField TextFieldBuscar;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -46,6 +64,21 @@ public class Interface_Controller implements Initializable {
     }
 
     public void btn_actualizar_doc(ActionEvent actionEvent) {
+        // Obtener el índice del elemento seleccionado
+        int indice = listview_biblioteca.getSelectionModel().getSelectedIndex();
+        String nombreFile = listview_biblioteca.getSelectionModel().getSelectedItem();
+        System.out.println("Documento eliminado: " + nombreFile);
+        // Si se ha seleccionado un elemento, actualizarlo
+        if (indice >= 0) {
+            // Eliminar el archivo de la lista
+            File archivoSeleccionado = lista_archivos.get(nombreFile);
+            lista_archivos.remove(archivoSeleccionado);
+            // Conseguir el path del archivo
+            String path = archivoSeleccionado.getAbsolutePath();
+            File file_actualizado = new File(path);
+            lista_archivos.add(file_actualizado);
+
+        }
     }
 
     public void btn_eliminar_doc(ActionEvent actionEvent) {
@@ -90,4 +123,59 @@ public class Interface_Controller implements Initializable {
             indizarFile.indizacion(archivo);
         }
     }
+    public void btn_Buscar_Archivos(ActionEvent actionEvent) {
+        String palabraBuscar = TextFieldBuscar.getText().trim();
+        // Limpiar la lista de resultados
+        listview_results.getItems().clear();
+        // Iterar sobre cada archivo y buscar la palabra
+        for (File archivo : lista_archivos) {
+            if (buscarPalabraEnArchivo(palabraBuscar, archivo)) {
+                listview_results.getItems().add(archivo.getName());
+            }
+        }
+    }
+    private boolean buscarPalabraEnArchivo(String palabra, File archivo) {
+        String nombreArchivo = archivo.getName();
+        String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1);
+
+        if (extension.equalsIgnoreCase("docx")) {
+            try (FileInputStream fis = new FileInputStream(archivo)) {
+                XWPFDocument document = new XWPFDocument(fis);
+                List<XWPFParagraph> paragraphs = document.getParagraphs();
+
+                for (XWPFParagraph paragraph : paragraphs) {
+                    String texto = paragraph.getText();
+                    if (texto != null && texto.contains(palabra)) {
+                        return true;
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else if (extension.equalsIgnoreCase("txt")) {
+            try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
+                String linea;
+                while ((linea = br.readLine()) != null) {
+                    if (linea.contains(palabra)) {
+                        return true;
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else if (extension.equalsIgnoreCase("pdf")) {
+            try (PDDocument document = PDDocument.load(archivo)) {
+                PDFTextStripper pdfStripper = new PDFTextStripper();
+                String texto = pdfStripper.getText(document);
+                if (texto != null && texto.contains(palabra)) {
+                    return true;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return false;
+    }
+
 }
