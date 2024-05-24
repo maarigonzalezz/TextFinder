@@ -4,14 +4,11 @@ import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
@@ -23,7 +20,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-
+import javafx.scene.text.Text;
+import javafx.scene.text.TextFlow;
+import java.awt.Desktop;
 
 public class Interface_Controller implements Initializable {
 
@@ -41,6 +40,9 @@ public class Interface_Controller implements Initializable {
     @FXML
     private ListView<String> listview_results;
 
+    @FXML
+    private TextFlow textFlow;
+
     private Indizador indizador = new Indizador();
     private String textoParseado = "";
 
@@ -51,6 +53,13 @@ public class Interface_Controller implements Initializable {
     public void initialize(URL url, ResourceBundle resourceBundle) {
         listview_biblioteca.setItems(FXCollections.observableArrayList());
         listview_results.setItems(FXCollections.observableArrayList());
+
+        // Añade un listener para el ListView de resultados
+        listview_results.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                mostrarContenidoArchivo(new File(newValue));
+            }
+        });
     }
 
     public void btn_anadir_doc(ActionEvent actionEvent) {
@@ -125,15 +134,32 @@ public class Interface_Controller implements Initializable {
     }
     public void btn_Buscar_Archivos(ActionEvent actionEvent) {
         String palabraBuscar = TextFieldBuscar.getText().trim();
-        // Limpiar la lista de resultados
         listview_results.getItems().clear();
-        // Iterar sobre cada archivo y buscar la palabra
         for (File archivo : lista_archivos) {
             if (buscarPalabraEnArchivo(palabraBuscar, archivo)) {
-                listview_results.getItems().add(archivo.getName());
+                listview_results.getItems().add(archivo.getAbsolutePath());
             }
         }
     }
+
+    // Este método se llama cuando se presiona el botón "Abrir Documento"
+    public void btn_Abrir_Doc(ActionEvent actionEvent) {
+        String selectedFilePath = listview_results.getSelectionModel().getSelectedItem();
+        if (selectedFilePath != null) {
+            File selectedFile = new File(selectedFilePath);
+            mostrarContenidoArchivo(selectedFile);
+
+            // Intentar abrir el archivo con la aplicación predeterminada
+            try {
+                Desktop.getDesktop().open(selectedFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("No se ha seleccionado ningún archivo.");
+        }
+    }
+
     private boolean buscarPalabraEnArchivo(String palabra, File archivo) {
         String nombreArchivo = archivo.getName();
         String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1);
@@ -178,4 +204,74 @@ public class Interface_Controller implements Initializable {
         return false;
     }
 
+    private void mostrarContenidoArchivo(File archivo) {
+        // Obtener el nombre del archivo sin la ruta completa
+        String nombreArchivo = archivo.getName();
+        String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1);
+
+        StringBuilder contenido = new StringBuilder();
+
+        if (extension.equalsIgnoreCase("docx")) {
+            try (FileInputStream fis = new FileInputStream(archivo)) {
+                XWPFDocument document = new XWPFDocument(fis);
+                List<XWPFParagraph> paragraphs = document.getParagraphs();
+
+                for (XWPFParagraph paragraph : paragraphs) {
+                    contenido.append(paragraph.getText()).append("\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else if (extension.equalsIgnoreCase("txt")) {
+            try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
+                String linea;
+                while ((linea = br.readLine()) != null) {
+                    contenido.append(linea).append("\n");
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else if (extension.equalsIgnoreCase("pdf")) {
+            try (PDDocument document = PDDocument.load(archivo)) {
+                PDFTextStripper pdfStripper = new PDFTextStripper();
+                contenido.append(pdfStripper.getText(document));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Obtener la ubicación del directorio de descargas
+        String directorioDescargas = System.getProperty("user.home") + File.separator + "Downloads";
+
+        // Construir la ruta completa al archivo
+        String rutaCompleta = directorioDescargas + File.separator + nombreArchivo;
+
+        // Mostrar el contenido del archivo
+        resaltarPalabra(contenido.toString(), TextFieldBuscar.getText().trim());
+    }
+
+    private void resaltarPalabra(String contenido, String palabraBuscar) {
+        textFlow.getChildren().clear();
+        if (palabraBuscar.isEmpty()) {
+            textFlow.getChildren().add(new Text(contenido));
+            return;
+        }
+
+        int index = 0;
+        while (index < contenido.length()) {
+            int wordIndex = contenido.indexOf(palabraBuscar, index);
+            if (wordIndex == -1) {
+                textFlow.getChildren().add(new Text(contenido.substring(index)));
+                break;
+            }
+            if (wordIndex > index) {
+                textFlow.getChildren().add(new Text(contenido.substring(index, wordIndex)));
+            }
+            Text highlightedText = new Text(contenido.substring(wordIndex, wordIndex + palabraBuscar.length()));
+            highlightedText.setStyle("-fx-fill: black; -fx-font-weight: bold; -fx-underline: true; -fx-background-color: red;");
+            textFlow.getChildren().add(highlightedText);
+            index = wordIndex + palabraBuscar.length();
+        }
+    }
 }
+
