@@ -31,16 +31,16 @@
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="558.0" prefWidth="413.0">
                     <children>
                         <TextField fx:id="TextFieldBuscar" layoutX="14.0" layoutY="30.0" prefHeight="31.0" prefWidth="186.0" />
-                        <MenuButton contentDisplay="RIGHT" layoutX="393.0" layoutY="30.0" mnemonicParsing="false" popupSide="LEFT" text="Ordenar por">
+                        <MenuButton fx:id="btn_Sort" contentDisplay="RIGHT" layoutX="393.0" layoutY="30.0" mnemonicParsing="false" popupSide="LEFT" text="Ordenar por">
                             <items>
-                                <MenuItem mnemonicParsing="false" text="Nombre" />
-                                <MenuItem mnemonicParsing="false" text="Fecha de creación" />
-                                <MenuItem mnemonicParsing="false" text="Tamaño" />
+                                <MenuItem mnemonicParsing="false" onAction="#Sort_by_Name" text="Nombre" />
+                                <MenuItem mnemonicParsing="false" onAction="#Sort_by_Date" text="Fecha de creación" />
+                                <MenuItem mnemonicParsing="false" onAction="#Sort_by_size" text="Tamaño" />
                             </items>
                         </MenuButton>
                         <ListView fx:id="listview_results" layoutY="77.0" prefHeight="263.0" prefWidth="546.0" />
                         <Button layoutX="209.0" layoutY="30.0" mnemonicParsing="false" onAction="#btn_Buscar_Archivos" text="Buscar" />
-                        <Button layoutX="274.0" layoutY="30.0" mnemonicParsing="false" onAction="#btn_Abrir_Doc" text="Abrir Documento" />
+                        <Button layoutX="274.0" layoutY="30.0" mnemonicParsing="false" onAction="#btn_Abrir_Doc1" text="Abrir Documento" />
                         <ScrollPane fx:id="scrollPane" layoutX="13.0" layoutY="346.0" prefHeight="198.0" prefWidth="460.0">
                             <content>
                                 <TextFlow fx:id="textFlow" />

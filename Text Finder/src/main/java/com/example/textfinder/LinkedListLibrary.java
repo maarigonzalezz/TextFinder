@@ -107,6 +107,28 @@ public class LinkedListLibrary<E> implements Iterable<E> {
         return false;
     }
 
+    public E get(int index) {
+        if (index < 0 || index >= this.size) {
+            throw new IndexOutOfBoundsException("Índice fuera de rango: " + index);
+        }
+        Node<E> current = this.head;
+        for (int i = 0; i < index; i++) {
+            current = current.next;
+        }
+        return current.value;
+    }
+
+    public void set(int index, E element) {
+        if (index < 0 || index >= this.size) {
+            throw new IndexOutOfBoundsException("Índice fuera de rango: " + index);
+        }
+        Node<E> current = this.head;
+        for (int i = 0; i < index; i++) {
+            current = current.next;
+        }
+        current.value = element;
+    }
+
     public E get(String name) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("El nombre no puede ser nulo o vacío");
@@ -119,5 +141,14 @@ public class LinkedListLibrary<E> implements Iterable<E> {
             current = current.next;
         }
         throw new NoSuchElementException("El elemento con el nombre '" + name + "' no se encontró en la lista");
+    }
+
+    public void printList() {
+        Node<E> current = head;
+        while (current != null) {
+            System.out.print(current.value + " ");
+            current = current.next;
+        }
+        System.out.println();
     }
 }

@@ -1,16 +1,20 @@
 package com.example.textfinder;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuButton;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.io.File;
 import javafx.scene.control.TextField;
@@ -26,9 +30,12 @@ import java.awt.Desktop;
 
 public class Interface_Controller implements Initializable {
 
+    public MenuButton btn_Sort;
     Indizador indizarFile =  new Indizador();
 
     LinkedListLibrary<File> lista_archivos = new LinkedListLibrary<>();
+
+    LinkedListLibrary<File> filesresults = new LinkedListLibrary<>();
 
     FileChooser.ExtensionFilter txt = new FileChooser.ExtensionFilter("Text Files (*.txt)", "*.txt");
     FileChooser.ExtensionFilter pdf = new FileChooser.ExtensionFilter("PDF Files (*.pdf)", "*.pdf");
@@ -57,10 +64,21 @@ public class Interface_Controller implements Initializable {
         // Añade un listener para el ListView de resultados
         listview_results.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
-                mostrarContenidoArchivo(new File(newValue));
+                // Obtener el índice del elemento seleccionado
+                int index = listview_results.getSelectionModel().getSelectedIndex();
+                // Verificar si el índice es válido
+                if (index >= 0) {
+                    // Obtener el nombre del archivo seleccionado como cadena
+                    // Obtener el archivo correspondiente al nombre
+                    File archivoSeleccionado = lista_archivos.get(newValue);
+                    // Mostrar el contenido del archivo seleccionado
+                    mostrarContenidoArchivo(archivoSeleccionado);
+                }
             }
         });
     }
+
+
 
     public void btn_anadir_doc(ActionEvent actionEvent) {
         FileChooser fileChooser = new FileChooser();
@@ -128,30 +146,37 @@ public class Interface_Controller implements Initializable {
     }
 
     public void btn_IndizarArchivos(ActionEvent actionEvent) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setHeaderText("Archivos indizados correctamente");
         for (File archivo : lista_archivos) {
             indizarFile.indizacion(archivo);
         }
+        alert.showAndWait();
     }
+
     public void btn_Buscar_Archivos(ActionEvent actionEvent) {
         String palabraBuscar = TextFieldBuscar.getText().trim();
         listview_results.getItems().clear();
         for (File archivo : lista_archivos) {
             if (buscarPalabraEnArchivo(palabraBuscar, archivo)) {
-                listview_results.getItems().add(archivo.getAbsolutePath());
+                listview_results.getItems().add(archivo.getName());
+                filesresults.add(archivo);
             }
         }
+        filesresults.printList();
     }
 
     // Este método se llama cuando se presiona el botón "Abrir Documento"
-    public void btn_Abrir_Doc(ActionEvent actionEvent) {
-        String selectedFilePath = listview_results.getSelectionModel().getSelectedItem();
-        if (selectedFilePath != null) {
-            File selectedFile = new File(selectedFilePath);
-            mostrarContenidoArchivo(selectedFile);
-
+    public void btn_Abrir_Doc1(ActionEvent actionEvent) {
+        int indice = listview_results.getSelectionModel().getSelectedIndex();
+        String nombreFile = listview_results.getSelectionModel().getSelectedItem();
+        // Si se ha seleccionado un elemento, actualizarlo
+        if (indice >= 0) {
+            File archivoSeleccionado = filesresults.get(nombreFile);
+            mostrarContenidoArchivo(archivoSeleccionado);
             // Intentar abrir el archivo con la aplicación predeterminada
             try {
-                Desktop.getDesktop().open(selectedFile);
+                Desktop.getDesktop().open(archivoSeleccionado);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -205,46 +230,42 @@ public class Interface_Controller implements Initializable {
     }
 
     private void mostrarContenidoArchivo(File archivo) {
+        // Verificar si el archivo existe
+        if (!archivo.exists()) {
+            System.out.println("El archivo no existe: " + archivo.getAbsolutePath());
+            return;
+        }
+
         // Obtener el nombre del archivo sin la ruta completa
         String nombreArchivo = archivo.getName();
         String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1);
 
         StringBuilder contenido = new StringBuilder();
 
-        if (extension.equalsIgnoreCase("docx")) {
-            try (FileInputStream fis = new FileInputStream(archivo)) {
-                XWPFDocument document = new XWPFDocument(fis);
+        try {
+            if (extension.equalsIgnoreCase("docx")) {
+                XWPFDocument document = new XWPFDocument(new FileInputStream(archivo));
                 List<XWPFParagraph> paragraphs = document.getParagraphs();
 
                 for (XWPFParagraph paragraph : paragraphs) {
                     contenido.append(paragraph.getText()).append("\n");
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else if (extension.equalsIgnoreCase("txt")) {
-            try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
-                String linea;
-                while ((linea = br.readLine()) != null) {
-                    contenido.append(linea).append("\n");
+            } else if (extension.equalsIgnoreCase("txt")) {
+                try (BufferedReader br = new BufferedReader(new FileReader(archivo))) {
+                    String linea;
+                    while ((linea = br.readLine()) != null) {
+                        contenido.append(linea).append("\n");
+                    }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
+            } else if (extension.equalsIgnoreCase("pdf")) {
+                try (PDDocument document = PDDocument.load(archivo)) {
+                    PDFTextStripper pdfStripper = new PDFTextStripper();
+                    contenido.append(pdfStripper.getText(document));
+                }
             }
-        } else if (extension.equalsIgnoreCase("pdf")) {
-            try (PDDocument document = PDDocument.load(archivo)) {
-                PDFTextStripper pdfStripper = new PDFTextStripper();
-                contenido.append(pdfStripper.getText(document));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        // Obtener la ubicación del directorio de descargas
-        String directorioDescargas = System.getProperty("user.home") + File.separator + "Downloads";
-
-        // Construir la ruta completa al archivo
-        String rutaCompleta = directorioDescargas + File.separator + nombreArchivo;
 
         // Mostrar el contenido del archivo
         resaltarPalabra(contenido.toString(), TextFieldBuscar.getText().trim());
@@ -273,5 +294,34 @@ public class Interface_Controller implements Initializable {
             index = wordIndex + palabraBuscar.length();
         }
     }
+
+
+    public void Sort_by_Name(ActionEvent actionEvent) {
+        System.out.println("sort by name/QuickSort");
+        QuickSort.sort(filesresults);
+        actualizarListViewResults();
+
+    }
+
+    private void actualizarListViewResults() {
+        listview_results.getItems().clear();
+        for (File file : filesresults) {
+            listview_results.getItems().add(file.getName());
+        }
+    }
+
+    public void Sort_by_Date(ActionEvent actionEvent) {
+        System.out.println("sort by date/BubbleSort");
+        BubbleSort.sort(filesresults);
+        actualizarListViewResults();
+    }
+
+    public void Sort_by_size(ActionEvent actionEvent) {
+        System.out.println("sort by size/RadixSort");
+        RadixSort.sort(filesresults);
+        actualizarListViewResults();
+    }
+
+
 }
 
